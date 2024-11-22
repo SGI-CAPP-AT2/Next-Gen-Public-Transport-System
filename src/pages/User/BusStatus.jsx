@@ -11,6 +11,7 @@ const BusStatus = () => {
   const [_, setBarH] = useState(0);
   const [searchRes, setSearchResults] = useState(null);
   const [searchInputVal, setSearchInputVal] = useState('');
+  const [currentStopVal, setCurrentStopVal] = useState('');
   const [lastQuery, setLastQuery] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const appWidth = width > 750 ? 750 : width - 20;
@@ -18,9 +19,13 @@ const BusStatus = () => {
   const search = async () => {
     setIsLoading(true);
     const res = await fetch(
-      'https://busapi-nycezhdh5a-uc.a.run.app?q=' + searchInputVal
+      'https://busapi-nycezhdh5a-uc.a.run.app?q=' +
+        searchInputVal +
+        '&c=' +
+        currentStopVal
     );
     setLastQuery(searchInputVal);
+    console.log(res);
     const json__sr = await res.json();
     setSearchResults(json__sr);
     setIsLoading(false);
@@ -49,8 +54,14 @@ const BusStatus = () => {
           marginBottom={'10px'}
         >
           <TextInput
+            value={currentStopVal}
+            placeholder="Current Stop"
+            onChange={value => setCurrentStopVal(value.currentTarget.value)}
+          />
+          <Box width={10}></Box>
+          <TextInput
             value={searchInputVal}
-            placeholder="Search..."
+            placeholder="Stop , Route or Route Number"
             onChange={value => setSearchInputVal(value.currentTarget.value)}
           />
           <Box width={10}></Box>
@@ -62,14 +73,20 @@ const BusStatus = () => {
               <Box width={appWidth - 10} overflow={'scroll'} margin={'auto'}>
                 <ListView
                   width={appWidth - 20}
-                  list={searchRes.map(({ route, current, name }) => {
-                    return {
-                      id: current + name,
-                      text: route + ' ' + name,
-                      sub: 'currently at: ' + current.name,
-                      icon: GitCommitIcon,
-                    };
-                  })}
+                  list={searchRes.map(
+                    ({ route, current, name, predicted_crowd }) => {
+                      return {
+                        id: current + name,
+                        text: route + ' ' + name,
+                        sub:
+                          'Currently at: ' +
+                          current.name +
+                          ', Predicted Crowd: ' +
+                          predicted_crowd,
+                        icon: GitCommitIcon,
+                      };
+                    }
+                  )}
                 />
               </Box>
             ) : lastQuery && searchRes ? (
